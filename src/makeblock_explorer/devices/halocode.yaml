@@ -1,0 +1,42 @@
+name: HaloCode
+chip: ESP32
+description: "Compact microcontroller with LED ring and sensors"
+transport: [serial, wifi]
+
+sensors:
+  accelerometer:
+    device_id: 0x3D
+    description: "3-axis acceleration"
+    readings:
+      - { name: x, type: float, unit: "g" }
+      - { name: y, type: float, unit: "g" }
+      - { name: z, type: float, unit: "g" }
+  gyroscope:
+    device_id: 0x3E
+    description: "3-axis angular velocity"
+    readings:
+      - { name: x, type: float, unit: "deg/s" }
+      - { name: y, type: float, unit: "deg/s" }
+      - { name: z, type: float, unit: "deg/s" }
+  microphone:
+    device_id: 0x07
+    description: "Sound level"
+    readings:
+      - { name: loudness, type: short, unit: "dB" }
+  touchpad:
+    device_id: 0x33
+    description: "Capacitive touch surface"
+    readings:
+      - { name: touched, type: byte, unit: "" }
+
+actuators:
+  led_ring:
+    device_id: 0x08
+    description: "12-LED RGB ring"
+    parameters:
+      - { name: index, type: byte, description: "LED index (0-11, or 255 for all)" }
+      - { name: red, type: byte, description: "Red (0-255)" }
+      - { name: green, type: byte, description: "Green (0-255)" }
+      - { name: blue, type: byte, description: "Blue (0-255)" }
+
+# NOTE: Device IDs are placeholders -- confirm via traffic capture.

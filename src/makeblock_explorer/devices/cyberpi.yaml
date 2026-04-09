@@ -1,0 +1,71 @@
+name: CyberPi
+chip: ESP32-WROVER-B
+description: "Programmable microcontroller with display, sensors, and connectivity"
+transport: [serial, wifi, bluetooth]
+
+sensors:
+  accelerometer:
+    device_id: 0x3D
+    description: "3-axis acceleration (g-force)"
+    readings:
+      - { name: x, type: float, unit: "g" }
+      - { name: y, type: float, unit: "g" }
+      - { name: z, type: float, unit: "g" }
+  gyroscope:
+    device_id: 0x3E
+    description: "3-axis angular velocity"
+    readings:
+      - { name: x, type: float, unit: "deg/s" }
+      - { name: y, type: float, unit: "deg/s" }
+      - { name: z, type: float, unit: "deg/s" }
+  light_sensor:
+    device_id: 0x03
+    description: "Ambient light level"
+    readings:
+      - { name: level, type: short, unit: "lux" }
+  microphone:
+    device_id: 0x07
+    description: "Sound level / audio input"
+    readings:
+      - { name: loudness, type: short, unit: "dB" }
+  joystick:
+    device_id: 0x28
+    description: "5-way directional joystick"
+    readings:
+      - { name: direction, type: byte, unit: "" }
+  button_a:
+    device_id: 0x29
+    description: "Push button A"
+    readings:
+      - { name: pressed, type: byte, unit: "" }
+  button_b:
+    device_id: 0x2A
+    description: "Push button B"
+    readings:
+      - { name: pressed, type: byte, unit: "" }
+
+actuators:
+  rgb_led:
+    device_id: 0x08
+    description: "5 full-color RGB LEDs"
+    parameters:
+      - { name: index, type: byte, description: "LED index (0-4, or 255 for all)" }
+      - { name: red, type: byte, description: "Red channel (0-255)" }
+      - { name: green, type: byte, description: "Green channel (0-255)" }
+      - { name: blue, type: byte, description: "Blue channel (0-255)" }
+  display:
+    device_id: 0x45
+    description: "128x128 IPS color display"
+    parameters:
+      - { name: command, type: byte, description: "Display command type" }
+      - { name: payload, type: string, description: "Display content" }
+  speaker:
+    device_id: 0x22
+    description: "Audio output speaker"
+    parameters:
+      - { name: frequency, type: short, description: "Tone frequency in Hz" }
+      - { name: duration, type: short, description: "Duration in ms" }
+
+# NOTE: Device IDs above are educated guesses based on Makeblock documentation.
+# Actual IDs will be confirmed through traffic capture from mBlock IDE.
+# The registry is designed to be easily updated once real IDs are discovered.
