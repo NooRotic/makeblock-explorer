@@ -5,6 +5,7 @@ import pytest
 from makeblock_explorer.protocol.f3 import (
     FOOTER,
     HEADER,
+    MIN_FRAME_SIZE,
     OFFLINE_MODE_PACKET,
     ONLINE_MODE_PACKET,
     F3Packet,
@@ -27,6 +28,9 @@ class TestConstants:
     def test_footer_value(self):
         assert FOOTER == 0xF4
 
+    def test_min_frame_size(self):
+        assert MIN_FRAME_SIZE == 10
+
     def test_online_mode_packet(self):
         expected = bytes([0xF3, 0xF6, 0x03, 0x00, 0x0D, 0x00, 0x01, 0x0E, 0xF4])
         assert ONLINE_MODE_PACKET == expected
@@ -46,18 +50,42 @@ class TestEnums:
     def test_mode_enum_exists(self):
         assert hasattr(Mode, "__members__")
 
-    def test_mode_has_online_and_offline(self):
-        # Validate online mode matches byte used in ONLINE_MODE_PACKET body check
-        # ONLINE_MODE_PACKET idx bytes = 0x01, 0x00 -> idx=1, which implies mode in packet type
-        # The ONLINE_MODE_PACKET has type=0x0D, mode=0x00, idx=0x01
-        # OFFLINE has type=0x0D, mode=0x00, idx=0x00
-        # Actually from constants the mode byte (index 5 of raw) = 0x00 for both
-        # The difference is in idx_lo: 0x01 vs 0x00
-        # So Mode.ONLINE and Mode.OFFLINE should correspond to index 1 and 0
-        # But per task desc: ONLINE_MODE_PACKET and OFFLINE_MODE_PACKET are special fixed packets
-        # Let's just confirm Mode and PacketType have at least some members
-        assert len(Mode.__members__) >= 1
-        assert len(PacketType.__members__) >= 1
+    def test_packet_type_script_value(self):
+        """SCRIPT must be 0x28 — the wire byte sent to real hardware."""
+        assert PacketType.SCRIPT == 0x28
+
+    def test_packet_type_online_value(self):
+        assert PacketType.ONLINE == 0x0D
+
+    def test_packet_type_run_without_response_value(self):
+        assert PacketType.RUN_WITHOUT_RESPONSE == 0x00
+
+    def test_packet_type_run_with_response_value(self):
+        assert PacketType.RUN_WITH_RESPONSE == 0x01
+
+    def test_packet_type_reset_value(self):
+        assert PacketType.RESET == 0x02
+
+    def test_packet_type_run_immediate_value(self):
+        assert PacketType.RUN_IMMEDIATE == 0x03
+
+    def test_packet_type_subscribe_value(self):
+        assert PacketType.SUBSCRIBE == 0x29
+
+    def test_mode_with_response_value(self):
+        assert Mode.WITH_RESPONSE == 0x01
+
+    def test_mode_without_response_value(self):
+        assert Mode.WITHOUT_RESPONSE == 0x00
+
+    def test_mode_immediate_value(self):
+        assert Mode.IMMEDIATE == 0x03
+
+    def test_packet_type_has_expected_member_count(self):
+        assert len(PacketType.__members__) == 7
+
+    def test_mode_has_expected_member_count(self):
+        assert len(Mode.__members__) == 3
 
 
 # ─── Dataclasses ───────────────────────────────────────────────────────────
@@ -106,6 +134,11 @@ class TestBuildF3Packet:
         assert pkt[0] == 0xF3
         assert pkt[-1] == 0xF4
         assert len(pkt) >= 9  # at minimum header+checksum+datalen(2)+type+mode+idx(2)+body_chk+footer
+
+    def test_type_byte_is_0x28(self):
+        """Type byte at offset [4] must be 0x28 (PacketType.SCRIPT) for hardware compliance."""
+        pkt = build_f3_packet("pass", 1)
+        assert pkt[4] == 0x28
 
     def test_datalen_encodes_script_length_field(self):
         """datalen = 4 (type+mode+idx_lo+idx_hi) + 2 (script_len_lo+hi) + len(script_utf8)."""
@@ -311,7 +344,7 @@ class TestParseF3Response:
         datalen_lo = datalen & 0xFF
         datalen_hi = (datalen >> 8) & 0xFF
         header_chk = (0xF3 + datalen_lo + datalen_hi) & 0xFF
-        type_b = 0x0B  # response type value (arbitrary, within valid F3 format)
+        type_b = int(PacketType.SCRIPT)  # 0x28 — spec-compliant response type
         mode_b = 0x00
         idx_lo = index & 0xFF
         idx_hi = (index >> 8) & 0xFF

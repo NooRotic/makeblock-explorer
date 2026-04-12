@@ -10,6 +10,7 @@ Implements two MakeBlock binary protocols:
 from .capture import CaptureEntry, CaptureTransport, format_hex_dump, load_capture
 from .f3 import (
     FOOTER,
+    MIN_FRAME_SIZE,
     OFFLINE_MODE_PACKET,
     ONLINE_MODE_PACKET,
     F3Packet,
@@ -42,6 +43,7 @@ __all__ = [
     # F3 protocol
     "F3_HEADER",
     "FOOTER",
+    "MIN_FRAME_SIZE",
     "F3Packet",
     "F3Response",
     "Mode",

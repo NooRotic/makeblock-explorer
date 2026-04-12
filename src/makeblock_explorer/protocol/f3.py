@@ -24,6 +24,7 @@ FOOTER: int = 0xF4
 _FRAME_OVERHEAD = 6  # 0xF3 + hchk + datalen(2) + bchk + 0xF4
 _BODY_MIN_SIZE = 3   # type + mode + idx_lo (minimum; mode-switch packets)
 _BODY_HEADER_SIZE = 4  # type + mode + idx_lo + idx_hi (script packets)
+MIN_FRAME_SIZE = 10  # Minimum total frame size (header + overhead + minimum body)
 
 # Pre-built mode switch packets (full wire bytes including checksums)
 ONLINE_MODE_PACKET = bytes([0xF3, 0xF6, 0x03, 0x00, 0x0D, 0x00, 0x01, 0x0E, 0xF4])
@@ -33,16 +34,21 @@ OFFLINE_MODE_PACKET = bytes([0xF3, 0xF6, 0x03, 0x00, 0x0D, 0x00, 0x00, 0x0D, 0xF
 class PacketType(IntEnum):
     """F3 packet type identifiers."""
 
-    SCRIPT = 0x0B   # MicroPython script execution request
-    MODE_SWITCH = 0x0D  # Online/offline mode switch
-    RESPONSE = 0x0B  # Response from device (same wire type as SCRIPT)
+    RUN_WITHOUT_RESPONSE = 0x00  # Run script, no response expected
+    RUN_WITH_RESPONSE = 0x01     # Run script, response expected
+    RESET = 0x02                 # Reset device
+    RUN_IMMEDIATE = 0x03         # Run immediately
+    ONLINE = 0x0D                # Online/offline mode switch
+    SCRIPT = 0x28                # MicroPython script execution request
+    SUBSCRIBE = 0x29             # Subscribe to events
 
 
 class Mode(IntEnum):
     """F3 execution mode."""
 
-    OFFLINE = 0x00  # Execute as stored (offline) script
-    ONLINE = 0x01   # Execute interactively (online/REPL) mode
+    WITHOUT_RESPONSE = 0x00  # Execute without response
+    WITH_RESPONSE = 0x01     # Execute with response
+    IMMEDIATE = 0x03         # Execute immediately
 
 
 @dataclass
@@ -98,7 +104,7 @@ def _compute_body_checksum(
 def build_f3_packet(
     script: str,
     index: int,
-    mode: Mode = Mode.ONLINE,
+    mode: int = Mode.WITH_RESPONSE,
 ) -> bytes:
     """Encode a MicroPython script into a complete F3 wire packet.
 
@@ -109,7 +115,7 @@ def build_f3_packet(
     Args:
         script: MicroPython source code string to execute. Must be non-empty.
         index: Command index (0-65535) for request/response correlation.
-        mode: Execution mode (default Mode.ONLINE).
+        mode: Execution mode (default Mode.WITH_RESPONSE).
 
     Returns:
         Complete F3 framed packet as bytes.
