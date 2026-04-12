@@ -53,7 +53,7 @@ This spec covers the refactor from FF55 to F3 and the addition of a web-based da
 │  │  POST /api/connect     - connect to device          │ │
 │  │  POST /api/disconnect  - close connection           │ │
 │  │  POST /api/command     - execute MicroPython script │ │
-│  │  GET  /api/sensors     - latest cached readings     │ │
+│  │  GET  /api/sensors/:id - latest cached readings     │ │
 │  │  WS   /api/stream      - live sensor stream         │ │
 │  │  POST /api/notify      - push text to display       │ │
 │  │  POST /api/led         - set LED color(s)           │ │
@@ -204,7 +204,7 @@ class DeviceManager:
     Commands are submitted via async methods that use thread-safe queues.
     """
 
-    device_id: str           # Unique identifier (e.g., "cyberpi-COM5")
+    device_id: str           # Unique identifier (e.g., "device-COM5")
     device_type: str         # "cyberpi" or "halocode" (detected by probing: try `cyberpi.get_bri()` — success = CyberPi, error = try `halocode.get_brightness()` for HaloCode, fallback = "unknown")
     port: str                # COM port
     is_connected: bool       # Connection state
@@ -287,13 +287,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"], allo
 **WebSocket message format:**
 ```json
 // Server → Client (sensor update)
-{"type": "sensor", "device_id": "cyberpi-COM5", "data": {"brightness": 42, "pitch": 3, "roll": -1, "accel_x": 0.2}}
-
-// Server → Client (notification acknowledgment)
-{"type": "notify_ack", "device_id": "cyberpi-COM5", "status": "ok"}
+{"type": "sensor", "device_id": "device-COM5", "data": {"brightness": 42, "pitch": 3, "roll": -1, "accel_x": 0.2}}
 
 // Client → Server (subscribe to specific device)
-{"type": "subscribe", "device_id": "cyberpi-COM5"}
+{"type": "subscribe", "device_id": "device-COM5"}
 
 // Client → Server (subscribe to all)
 {"type": "subscribe", "device_id": "all"}
@@ -336,7 +333,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"], allo
 The simple notification feature for this phase:
 
 **Frontend (`/notify`):**
-- Text input field (max 20 chars — display is 128px wide)
+- Text input field (max 30 chars — fits at 16-20pt on the 128px wide display)
 - Color picker (defaults to white)
 - Font size selector (16, 20, 24, 28, 32)
 - Device selector dropdown (if multiple connected)
@@ -347,7 +344,7 @@ The simple notification feature for this phase:
 ```json
 // Request
 {
-  "device_id": "cyberpi-COM5",
+  "device_id": "device-COM5",
   "text": "Hi Chat!",
   "color": [0, 255, 0],
   "size": 24,
@@ -355,7 +352,7 @@ The simple notification feature for this phase:
 }
 
 // Response
-{"status": "ok", "device_id": "cyberpi-COM5"}
+{"status": "ok", "device_id": "device-COM5"}
 ```
 
 **Device execution sequence:**
