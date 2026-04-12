@@ -195,6 +195,12 @@ class DeviceManager:
         if self._serial is None:
             return None
 
+        # Drain any stale bytes from previous responses before sending
+        try:
+            self._serial.reset_input_buffer()
+        except Exception:
+            pass
+
         self._serial.write(packet)
 
         if not expect_response:
