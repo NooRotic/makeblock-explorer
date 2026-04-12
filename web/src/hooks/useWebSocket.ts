@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const WS_URL =
-  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000/api/stream";
+  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8333/api/stream";
 
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);

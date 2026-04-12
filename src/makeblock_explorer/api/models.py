@@ -16,6 +16,7 @@ class DisconnectRequest(BaseModel):
 class CommandRequest(BaseModel):
     device_id: str
     script: str
+    timeout: float | None = None
 
 
 class LedRequest(BaseModel):

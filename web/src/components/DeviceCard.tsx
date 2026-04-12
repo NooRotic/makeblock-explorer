@@ -17,7 +17,7 @@ function SensorBar({ label, value, max, color, unit }: SensorBarProps) {
       <div className="flex justify-between text-xs text-gray-400 mb-1">
         <span>{label}</span>
         <span>
-          {value.toFixed(1)}
+          {Number(value).toFixed(1)}
           {unit}
         </span>
       </div>
@@ -42,7 +42,7 @@ function SensorValue({ label, value, unit }: SensorValueProps) {
     <div className="flex justify-between items-center py-1 border-b border-gray-700 last:border-0">
       <span className="text-xs text-gray-400">{label}</span>
       <span className="text-sm font-mono text-gray-200">
-        {value.toFixed(2)}
+        {Number(value).toFixed(2)}
         <span className="text-gray-500 ml-1">{unit}</span>
       </span>
     </div>
@@ -63,6 +63,10 @@ export function DeviceCard({ device, sensorData, onDisconnect }: DeviceCardProps
   const pitch = sensors["pitch"] ?? 0;
   const roll = sensors["roll"] ?? 0;
   const accelX = sensors["accel_x"] ?? 0;
+  const accelY = sensors["accel_y"] ?? 0;
+  const accelZ = sensors["accel_z"] ?? 0;
+  const loudness = sensors["loudness"] ?? 0;
+  const hasSensors = Object.keys(sensors).length > 0;
 
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 space-y-3">
@@ -88,26 +92,46 @@ export function DeviceCard({ device, sensorData, onDisconnect }: DeviceCardProps
       {/* Sensor bars */}
       <div className="space-y-1">
         <SensorBar
-          label="Brightness"
-          value={brightness}
-          max={100}
-          color="#eab308"
-        />
-        <SensorBar
           label="Battery"
           value={battery}
           max={100}
           color="#22c55e"
           unit="%"
         />
+        <SensorBar
+          label="Brightness"
+          value={brightness}
+          max={100}
+          color="#eab308"
+        />
+        <SensorBar
+          label="Loudness"
+          value={Math.max(0, loudness)}
+          max={100}
+          color="#8b5cf6"
+          unit=" dB"
+        />
       </div>
 
-      {/* Sensor values */}
+      {/* Orientation */}
       <div className="bg-gray-800 rounded-md px-3 py-2">
         <SensorValue label="Pitch" value={pitch} unit="°" />
         <SensorValue label="Roll" value={roll} unit="°" />
-        <SensorValue label="Accel X" value={accelX} unit="g" />
       </div>
+
+      {/* Accelerometer */}
+      <div className="bg-gray-800 rounded-md px-3 py-2">
+        <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Accelerometer</p>
+        <SensorValue label="X" value={accelX} unit="m/s²" />
+        <SensorValue label="Y" value={accelY} unit="m/s²" />
+        <SensorValue label="Z" value={accelZ} unit="m/s²" />
+      </div>
+
+      {!hasSensors && (
+        <p className="text-xs text-gray-600 text-center py-2">
+          Waiting for sensor data...
+        </p>
+      )}
     </div>
   );
 }

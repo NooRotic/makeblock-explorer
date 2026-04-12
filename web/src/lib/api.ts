@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8333";
 
 export interface DeviceInfo {
   port: string;
@@ -76,14 +76,20 @@ export async function setLed(
 ): Promise<void> {
   await apiFetch("/api/led", {
     method: "POST",
-    body: JSON.stringify({ device_id: deviceId, r, g, b, led_id: ledId }),
+    body: JSON.stringify({
+      device_id: deviceId,
+      red: r,
+      green: g,
+      blue: b,
+      led_id: ledId,
+    }),
   });
 }
 
 export async function pushNotify(
   deviceId: string,
   text: string,
-  color: string,
+  color: [number, number, number],
   size: number,
   flashLeds: boolean
 ): Promise<void> {

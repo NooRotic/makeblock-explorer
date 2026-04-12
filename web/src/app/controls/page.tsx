@@ -66,9 +66,10 @@ export default function ControlsPage() {
   async function handleShowText() {
     if (!selectedId || !displayText.trim()) return;
     const { r, g, b } = hexToRgb(displayColor);
-    const script = `cyberpi.display.show_label("${displayText}", color=(${r},${g},${b}))`;
     try {
-      await executeCommand(selectedId, script);
+      // Set text color first, then show label
+      await executeCommand(selectedId, `cyberpi.display.set_brush(${r},${g},${b})`);
+      await executeCommand(selectedId, `cyberpi.display.show_label("${displayText}", 20, "center")`);
       showFeedback("Text sent to display");
     } catch (e) {
       showError(e instanceof Error ? e.message : "Failed to show text");

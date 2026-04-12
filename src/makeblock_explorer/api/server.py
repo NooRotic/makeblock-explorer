@@ -46,7 +46,7 @@ def create_app(registry: DeviceRegistry | None = None) -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000"],
+        allow_origins=["http://localhost:3333"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -66,4 +66,4 @@ def run() -> None:
     import uvicorn
 
     app = create_app()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8333)

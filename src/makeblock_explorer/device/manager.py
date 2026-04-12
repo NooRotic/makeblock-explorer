@@ -49,6 +49,7 @@ class DeviceManager:
         self._index: int = 0
         self._poll_task: asyncio.Task | None = None
         self._subscribers: dict[str, Callable[[dict], None]] = {}
+        self._lock: asyncio.Lock = asyncio.Lock()
 
     @property
     def is_connected(self) -> bool:
@@ -83,6 +84,24 @@ class DeviceManager:
 
         await asyncio.to_thread(self._reset_device)
         await asyncio.to_thread(self._handshake)
+
+        # Identify the device type
+        await self._identify_device()
+
+        # Auto-start sensor polling
+        await self.start_sensor_polling()
+
+    async def _identify_device(self) -> None:
+        """Probe the device to determine its type."""
+        try:
+            resp = await self.execute("cyberpi.get_name()", expect_response=True)
+            if resp and resp.value:
+                self.device_type = str(resp.value)
+                return
+        except Exception:
+            logger.debug("get_name() probe failed", exc_info=True)
+        # Fallback: if we got here via CH340 on CyberPi, assume CyberPi
+        self.device_type = "CyberPi"
 
     def _reset_device(self) -> None:
         """Toggle DTR/RTS lines to reset the ESP32, then drain boot output."""
@@ -180,18 +199,20 @@ class DeviceManager:
     # Command execution
     # ------------------------------------------------------------------
 
-    async def execute(self, script: str, expect_response: bool = True) -> F3Response | None:
+    async def execute(self, script: str, expect_response: bool = True, timeout: float | None = None) -> F3Response | None:
         """Send a MicroPython script command and optionally wait for a response."""
         if not self.is_connected:
             raise ConnectionError("Device is not connected")
 
-        mode = Mode.WITH_RESPONSE if expect_response else Mode.WITHOUT_RESPONSE
-        packet = build_f3_packet(script, self._next_index(), mode)
+        async with self._lock:
+            mode = Mode.WITH_RESPONSE if expect_response else Mode.WITHOUT_RESPONSE
+            packet = build_f3_packet(script, self._next_index(), mode)
+            read_timeout = timeout if timeout is not None else HANDSHAKE_TIMEOUT
 
-        return await asyncio.to_thread(self._send_and_receive, packet, expect_response)
+            return await asyncio.to_thread(self._send_and_receive, packet, expect_response, read_timeout)
 
-    def _send_and_receive(self, packet: bytes, expect_response: bool) -> F3Response | None:
-        """Blocking: write packet and read response bytes (2 s timeout)."""
+    def _send_and_receive(self, packet: bytes, expect_response: bool, read_timeout: float = HANDSHAKE_TIMEOUT) -> F3Response | None:
+        """Blocking: write packet and read response bytes."""
         if self._serial is None:
             return None
 
@@ -207,7 +228,7 @@ class DeviceManager:
             return None
 
         # Accumulate incoming bytes until we parse a response or time out
-        deadline = time.monotonic() + HANDSHAKE_TIMEOUT
+        deadline = time.monotonic() + read_timeout
         buf = b""
 
         while time.monotonic() < deadline:

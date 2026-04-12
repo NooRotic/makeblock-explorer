@@ -33,7 +33,7 @@ async def execute_command(req: CommandRequest) -> dict:
     """Execute an arbitrary MicroPython script on the device."""
     manager = _get_manager(req.device_id)
     try:
-        response = await manager.execute(req.script, expect_response=True)
+        response = await manager.execute(req.script, expect_response=True, timeout=req.timeout)
     except Exception as exc:
         return {"value": None, "error": str(exc)}
 

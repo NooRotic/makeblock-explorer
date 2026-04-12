@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { getStatus, DeviceStatus, pushNotify } from "@/lib/api";
 
+function hexToRgb(hex: string): [number, number, number] {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+    : [0, 0, 0];
+}
+
 interface NotificationRecord {
   id: number;
   deviceId: string;
@@ -41,7 +48,7 @@ export default function NotifyPage() {
     setSending(true);
     setError(null);
     try {
-      await pushNotify(selectedId, text, color, fontSize, flashLeds);
+      await pushNotify(selectedId, text, hexToRgb(color), fontSize, flashLeds);
       const record: NotificationRecord = {
         id: Date.now(),
         deviceId: selectedId,

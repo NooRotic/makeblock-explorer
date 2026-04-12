@@ -128,7 +128,7 @@ class TestConnect:
 
         dm = DeviceManager()
 
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         mock_serial_cls.assert_called_once_with(
@@ -145,7 +145,7 @@ class TestConnect:
         mock_serial_cls.return_value = _make_mock_serial()
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         assert dm.port == "COM5"
@@ -156,7 +156,7 @@ class TestConnect:
         mock_serial_cls.return_value = _make_mock_serial()
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         assert dm.is_connected is True
@@ -174,7 +174,7 @@ class TestDisconnect:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         await dm.disconnect()
@@ -186,7 +186,7 @@ class TestDisconnect:
         mock_serial_cls.return_value = _make_mock_serial()
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         await dm.disconnect()
@@ -201,7 +201,7 @@ class TestDisconnect:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         # After disconnect the serial is gone, so is_connected must be False
@@ -227,7 +227,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         # Execute; no response bytes so returns None
@@ -246,7 +246,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         await dm.execute("cyberpi.get_bri()", expect_response=False)
@@ -264,7 +264,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
         # Reset index counter so the execute() call gets index 0 (handshake used 0 and 1)
         dm._index = 1
@@ -280,7 +280,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         result = await dm.execute("cyberpi.display_show('hi')", expect_response=False)
@@ -293,7 +293,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         await dm.execute("cyberpi.get_bri()", expect_response=True)
@@ -309,7 +309,7 @@ class TestExecute:
         mock_serial_cls.return_value = mock_serial
 
         dm = DeviceManager()
-        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"):
+        with patch.object(dm, "_reset_device"), patch.object(dm, "_handshake"), patch.object(dm, "_identify_device"), patch.object(dm, "start_sensor_polling"):
             await dm.connect("COM5")
 
         await dm.execute("cyberpi.display_show('hi')", expect_response=False)
@@ -354,7 +354,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = _make_mock_serial()
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             manager = await registry.connect("COM5")
 
         assert manager is not None
@@ -366,7 +366,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = _make_mock_serial()
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             manager = await registry.connect("COM5")
 
         await registry.disconnect("device-COM5")
@@ -378,7 +378,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = mock_serial
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             await registry.connect("COM5")
 
         await registry.disconnect("device-COM5")
@@ -389,7 +389,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = _make_mock_serial()
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             manager = await registry.connect("COM5")
 
         assert registry.get("device-COM5") is manager
@@ -403,7 +403,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = _make_mock_serial()
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             m1 = await registry.connect("COM5")
 
         connected = registry.list_connected()
@@ -414,7 +414,7 @@ class TestDeviceRegistry:
         mock_serial_cls.return_value = _make_mock_serial()
 
         registry = DeviceRegistry()
-        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"):
+        with patch.object(DeviceManager, "_reset_device"), patch.object(DeviceManager, "_handshake"), patch.object(DeviceManager, "_identify_device"), patch.object(DeviceManager, "start_sensor_polling"):
             await registry.connect("COM5")
 
         await registry.disconnect_all()
